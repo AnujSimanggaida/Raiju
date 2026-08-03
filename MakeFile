@@ -1,0 +1,39 @@
+CC       := gcc
+CFLAGS   := -Wall -Wextra -std=c11 -Iinclude
+LDFLAGS  := -lsodium
+
+SRC_DIR  := src
+BUILD_DIR := build
+TEST_DIR := tests
+
+SRCS := $(wildcard $(SRC_DIR)/*.c)
+OBJS := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRCS))
+TARGET := $(BUILD_DIR)/mini-vpn
+
+.PHONY: all debug release clean test
+
+all: release
+
+# Debug build: symbols, no optimization, ASan enabled
+debug: CFLAGS += -g -O0 -fsanitize=address,undefined
+debug: LDFLAGS += -fsanitize=address,undefined
+debug: $(TARGET)
+
+# Release build: optimized, no sanitizers
+release: CFLAGS += -O2
+release: $(TARGET)
+
+$(TARGET): $(OBJS) | $(BUILD_DIR)
+	$(CC) $(OBJS) -o $@ $(LDFLAGS)
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+
+test:
+	@echo "TODO: build and run unit tests from $(TEST_DIR)/"
+
+clean:
+	rm -rf $(BUILD_DIR)
