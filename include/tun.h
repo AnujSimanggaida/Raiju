@@ -6,11 +6,11 @@
  *
  * Responsible for:
  *   - Opening /dev/net/tun and creating a TUN interface
+ *   - Assigning an IPv4 address/MTU and bringing the interface up (via ioctl)
  *   - Reading/writing raw IP packets to/from the interface
  *
  * NOT responsible for:
- *   - Assigning IP addresses / bringing the interface up
- *     (that's done via `ip` commands at startup, see tun_configure_addr)
+ *   - Routing, encryption, or talking to the remote peer
  */
 
 #include <stddef.h>

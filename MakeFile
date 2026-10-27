@@ -10,7 +10,7 @@ SRCS := $(wildcard $(SRC_DIR)/*.c)
 OBJS := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRCS))
 TARGET := $(BUILD_DIR)/mini-vpn
 
-.PHONY: all debug release clean test
+.PHONY: all debug release clean test netns-test
 
 all: release
 
@@ -32,8 +32,17 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
-test:
-	@echo "TODO: build and run unit tests from $(TEST_DIR)/"
+# Unit tests: crypto, packet framing, replay window (no root needed)
+TEST_BIN := $(BUILD_DIR)/test_units
+test: $(TEST_BIN)
+	./$(TEST_BIN)
+
+$(TEST_BIN): $(TEST_DIR)/test_units.c $(SRC_DIR)/crypto.c $(SRC_DIR)/packet.c $(SRC_DIR)/session.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+
+# End-to-end: two network namespaces, real encrypted tunnel (no root needed)
+netns-test: release
+	$(TEST_DIR)/netns_test.sh $(TARGET)
 
 clean:
 	rm -rf $(BUILD_DIR)
